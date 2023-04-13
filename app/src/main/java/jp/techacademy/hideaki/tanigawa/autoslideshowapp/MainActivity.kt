@@ -12,6 +12,7 @@ import android.os.Looper
 import android.preference.PreferenceManager
 import android.provider.MediaStore
 import android.util.Log
+import androidx.appcompat.app.AlertDialog
 import jp.techacademy.hideaki.tanigawa.autoslideshowapp.databinding.ActivityMainBinding
 import java.util.*
 import kotlin.collections.ArrayList
@@ -142,7 +143,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    
+
     /**
      * パーミッションが許可されているかを判別する処理
      */
@@ -155,7 +156,15 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             PERMISSIONS_REQUEST_CODE ->
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    binding.startButton.isClickable = true
+                    binding.resetButton.isClickable = true
+                    binding.pauseButton.isClickable = true
                     getContentsInfo()
+                }else{
+                    binding.startButton.isClickable = false
+                    binding.resetButton.isClickable = false
+                    binding.pauseButton.isClickable = false
+                    showAlertDialog()
                 }
         }
     }
@@ -194,5 +203,31 @@ class MainActivity : AppCompatActivity() {
         for(i in imageList.indices){
             Log.d("REALLY",imageList[i])
         }
+    }
+
+    private fun showAlertDialog() {
+        // AlertDialog.Builderクラスを使ってAlertDialogの準備をする
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle("注意事項")
+        alertDialogBuilder.setMessage("全ての機能が非活性になります。\n 戻すのはめんどくさいです。諦めろ！")
+
+        // 肯定ボタンに表示される文字列、押したときのリスナーを設定する
+        alertDialogBuilder.setPositiveButton("肯定"){dialog, which ->
+            Log.d("UI_PARTS", "肯定ボタン")
+        }
+
+        // 否定ボタンに表示される文字列、押したときのリスナーを設定する
+        alertDialogBuilder.setNegativeButton("否定"){_,_ ->
+            Log.d("UI_PARTS", "否定ボタン")
+            // 許可されていないので許可ダイアログを表示する
+            requestPermissions(
+                arrayOf(readImagesPermission),
+                PERMISSIONS_REQUEST_CODE
+            )
+        }
+
+        // AlertDialogを作成して表示する
+        val alertDialog = alertDialogBuilder.create()
+        alertDialog.show()
     }
 }
